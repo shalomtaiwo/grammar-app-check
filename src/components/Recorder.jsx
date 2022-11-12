@@ -1,7 +1,6 @@
 import React from "react";
-import { Button } from "antd";
-import { AudioFilled } from '@ant-design/icons';
-
+import { IconButton } from "@mui/material";
+import KeyboardVoiceIcon from '@mui/icons-material/KeyboardVoice';
 
 function App({
 	handleListen,
@@ -28,26 +27,13 @@ function App({
 			<div>
 				<div id="sendBtn">
 					{isListening === false ? (
-                        <Button
-                        onClick={listenText}
-                        type="primary"
-                        shape="circle"
-                        size="large"
-                        icon={
-                            <AudioFilled />
-                        }
-                    />
+                        <IconButton onClick={listenText} color="primary" >
+                            <KeyboardVoiceIcon />
+                        </IconButton>
 					) : (
-						<Button
-							onClick={stopListen}
-							type="primary"
-							shape="circle"
-                            size="large"
-                            danger
-							icon={
-								<AudioFilled />
-							}
-						/>
+						<IconButton onClick={stopListen} color="error" >
+                            <KeyboardVoiceIcon />
+                        </IconButton>
 					)}
 					{/* <button
 						onClick={handleSaveNote}

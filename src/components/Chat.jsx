@@ -1,26 +1,23 @@
 import classnames from "classnames";
-import {Alert} from "antd";
+import { Alert, AlertTitle } from "@mui/material";
 
-const Chat = ({ isBot, text }) => {
-  return (
-    <div className={classnames("msg", { bot: isBot, user: !isBot })}>
+const Chat = ({ isBot, text, audioResult }) => {
+	return (
+		<div className={classnames("msg", { bot: isBot, user: !isBot })}>
 			¨
 			{isBot ? (
-				<Alert
-					message="RIRI BOT"
-					description={text}
-					type="success"
-				/>
+				<Alert severity="success">
+					<AlertTitle>RIRI BOT</AlertTitle>
+					{text}
+				</Alert>
 			) : (
-				<Alert
-					message="Shalom Taiwo"
-					description={text}
-					type="info"
-          className={"user"}
-				/>
+				<Alert severity="info">
+					<AlertTitle>Shalom</AlertTitle>
+					{text}
+				</Alert>
 			)}
 		</div>
-  );
+	);
 };
 
 export default Chat;

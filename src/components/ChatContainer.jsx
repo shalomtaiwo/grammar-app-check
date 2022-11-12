@@ -4,8 +4,6 @@ import { useAudioRecorder } from "@sarafhbk/react-audio-recorder";
 import SpeechRecognition, {
 	useSpeechRecognition,
 } from "react-speech-recognition";
-import { Wave } from "@foobar404/wave";
-// import { SpectrumVisualizer, SpectrumVisualizerTheme } from 'react-audio-visualizers';
 import Recorder from "./Recorder";
 import Chat from "./Chat";
 import FeedBack from "./FeedBack";
@@ -19,10 +17,6 @@ const ChatContainer = () => {
 	const textRef = useRef(null);
 	const [isListening, setIsListening] = useState(false);
 	const [note, setNote] = useState(null);
-
-	let audioElement = document.querySelector("#audio_record");
-	let canvasElement = document.querySelector("#audio_visual");
-
 	const history = ["AI: Hi, how are you doing?"];
 	const { transcript, browserSupportsSpeechRecognition, resetTranscript } =
 		useSpeechRecognition({ clearTranscriptOnListen: true });
@@ -36,47 +30,14 @@ const ChatContainer = () => {
 		// errorMessage,
 	} = useAudioRecorder();
 
-	const handleVisual = useCallback(() => {
-		let wave = new Wave(audioElement, canvasElement);
-
-		// Simple example: add an animation
-		wave.addAnimation(new wave.animations.Wave());
-
-		// Intermediate example: add an animation with options
-		wave.addAnimation(
-			new wave.animations.Wave({
-				lineWidth: 10,
-				lineColor: "red",
-				count: 20,
-			})
-		);
-
-		// Expert example: add multiple animations with options
-		wave.addAnimation(
-			new wave.animations.Square({
-				count: 50,
-				diamater: 300,
-			})
-		);
-
-		wave.addAnimation(
-			new wave.animations.Glob({
-				fillColor: { gradient: ["red", "blue", "green"], rotate: 45 },
-				lineWidth: 10,
-				lineColor: "black",
-			})
-		);
-  },[audioElement, canvasElement]);
-
 	const handleListen = useCallback(() => {
 		try {
 			SpeechRecognition.startListening({ continuous: true });
-      handleVisual();
 		} catch (error) {
 			console.log(error);
 		}
 		setNote(transcript);
-	}, [transcript, handleVisual]);
+	}, [transcript]);
 
 	useEffect(() => {
 		handleListen();
@@ -88,7 +49,6 @@ const ChatContainer = () => {
 
 	const handleSend = async () => {
 		setIsListening(false);
-		SpeechRecognition.stopListening({ continuous: false });
 		let s = textRef.current.value;
 		setChats((curr) => [
 			...curr,
@@ -148,12 +108,12 @@ const ChatContainer = () => {
 			{ isBot: true, text: botReply, isFeedBack: false },
 		]);
 		history.push("AI: " + botReply);
+		SpeechRecognition.stopListening();
 		resetTranscript();
 	};
 	if (!browserSupportsSpeechRecognition) {
 		return <span>Browser doesn't support speech recognition.</span>;
 	}
-
 	return (
 		<div className="container">
 			<div className="chat">
@@ -168,28 +128,19 @@ const ChatContainer = () => {
 							key={i}
 							isBot={chat.isBot}
 							text={chat.text}
+							audioResult={audioResult}
 						/>
 					)
 				)}
 			</div>
-			<audio
-				controls
-				src={audioResult}
-				id="audio_record"
-			/>
-			<canvas
-				id="audio_visual"
-				height={200}
-				width={500}
-			></canvas>
+
 			<div className="textbox">
 				<textarea
 					name="speech"
 					id="speech"
 					value={note ? note : ""}
 					onChange={() => ""}
-					rows="8"
-					cols="40"
+					rows="2"
 					readOnly
 					ref={textRef}
 				></textarea>
