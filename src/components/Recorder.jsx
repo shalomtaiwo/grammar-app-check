@@ -1,29 +1,53 @@
 import React from "react";
-import microphone from "./Assets/microphone.png";
-import recording from "./Assets/recording.png";
+import { Button } from "antd";
+import { AudioFilled } from '@ant-design/icons';
 
-function App({ note, isListening, handleSaveNote, setIsListening }) {
+
+function App({
+	handleListen,
+	handleSend,
+    isListening,
+    setIsListening,
+    setNote,
+    startRecording,
+    stopRecording
+}) {
+    const listenText = ()=>{
+        setNote('');
+        setIsListening(true);
+        startRecording()
+        handleListen();
+    }
+
+    const stopListen = () =>{
+        handleSend();
+        stopRecording();
+    }
 	return (
 		<>
 			<div>
-				<div>
+				<div id="sendBtn">
 					{isListening === false ? (
-						<span onClick={() => setIsListening((prevState) => !prevState)}>
-							{" "}
-							<img
-								width={50}
-								src={microphone}
-								alt="microphone"
-							/>{" "}
-						</span>
+                        <Button
+                        onClick={listenText}
+                        type="primary"
+                        shape="circle"
+                        size="large"
+                        icon={
+                            <AudioFilled />
+                        }
+                    />
 					) : (
-						<span onClick={() => setIsListening((prevState) => !prevState)}>
-							<img
-								width={50}
-								src={recording}
-								alt="microphone"
-							/>
-						</span>
+						<Button
+							onClick={stopListen}
+							type="primary"
+							shape="circle"
+                            size="large"
+                            danger
+							icon={
+								<AudioFilled />
+							}
+						/>
 					)}
 					{/* <button
 						onClick={handleSaveNote}

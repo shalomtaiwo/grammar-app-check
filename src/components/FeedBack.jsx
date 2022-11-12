@@ -1,7 +1,9 @@
+import { Alert } from 'antd';
+
 const FeedBack = ({ text }) => {
   return (
     <div className="feedback">
-      <p>That was not quite correct, you should say: {text}</p>
+      <Alert className='feedback' type="error" message={`That was not quite correct, you should say: ${text}`} />
     </div>
   );
 };

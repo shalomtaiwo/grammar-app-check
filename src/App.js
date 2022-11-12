@@ -1,8 +1,10 @@
 import "./App.css";
-import ChatContainer from "./components/ChatContainer";
+import Home from "./components/Home"
 
 const App = () => {
-  return <ChatContainer />;
+  return <div className="app">
+    <Home />
+  </div>
 };
 
 export default App;
