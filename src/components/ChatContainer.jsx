@@ -46,6 +46,7 @@ const ChatContainer = () => {
 		}
 
 		mic.onresult = (event) => {
+			console.log(Array.from(event.results))
 			const transcript = Array.from(event.results)
 				.map((result) => result[0])
 				.map((result) => result.transcript)
