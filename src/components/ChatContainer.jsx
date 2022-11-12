@@ -40,30 +40,29 @@ const ChatContainer = () => {
 		let wave = new Wave(audioElement, canvasElement);
 
 		// Simple example: add an animation
-		wave.addAnimation(new wave.animations.Wave());
+		// wave.addAnimation(new wave.animations.Wave());
 
 		// Intermediate example: add an animation with options
-		wave.addAnimation(
-			new wave.animations.Wave({
-				lineWidth: 10,
-				lineColor: "red",
-				count: 20,
-			})
-		);
+		// wave.addAnimation(
+		// 	new wave.animations.Wave({
+		// 		lineWidth: 10,
+		// 		lineColor: "red",
+		// 		count: 20,
+		// 	})
+		// );
 
 		// Expert example: add multiple animations with options
 		wave.addAnimation(
-			new wave.animations.Square({
-				count: 50,
-				diamater: 300,
-			})
-		);
-
-		wave.addAnimation(
-			new wave.animations.Glob({
-				fillColor: { gradient: ["red", "blue", "green"], rotate: 45 },
-				lineWidth: 10,
-				lineColor: "black",
+			new wave.animations.Circles({
+				count: 40,
+				diamater: 320,
+				lineColor: "orange",
+				count: 20,
+				frequencyBand: "mids",
+				fillColor: "#fefefe",
+				glow: { strength: 2, color: "pink" },
+				// lineColor: "green",
+				// lineWidth: 2,
 			})
 		);
   },[audioElement, canvasElement]);
