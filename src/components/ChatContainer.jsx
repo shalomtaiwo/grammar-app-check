@@ -9,7 +9,7 @@ import Chat from "./Chat";
 import FeedBack from "./FeedBack";
 
 const configuration = new Configuration({
-	apiKey: "",
+	apiKey: process.env.REACT_APP_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
 
@@ -49,6 +49,7 @@ const ChatContainer = () => {
 
 	const handleSend = async () => {
 		setIsListening(false);
+		SpeechRecognition.abortListening();
 		let s = textRef.current.value;
 		setChats((curr) => [
 			...curr,
@@ -97,6 +98,7 @@ const ChatContainer = () => {
 			presence_penalty: 0.6,
 			stop: [" Human:", " AI:"],
 		});
+		resetTranscript();
 
 		const botReply = botResponse.data.choices[0].text
 			.split("\n")
@@ -108,8 +110,6 @@ const ChatContainer = () => {
 			{ isBot: true, text: botReply, isFeedBack: false },
 		]);
 		history.push("AI: " + botReply);
-		SpeechRecognition.stopListening();
-		resetTranscript();
 	};
 	if (!browserSupportsSpeechRecognition) {
 		return <span>Browser doesn't support speech recognition.</span>;
@@ -135,11 +135,12 @@ const ChatContainer = () => {
 			</div>
 
 			<div className="textbox">
+				<audio controls src={audioResult} />
 				<textarea
 					name="speech"
 					id="speech"
 					value={note ? note : ""}
-					onChange={() => ""}
+					onChange={() => note ? note : ""}
 					rows="2"
 					readOnly
 					ref={textRef}
