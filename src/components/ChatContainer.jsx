@@ -112,7 +112,7 @@ const ChatContainer = () => {
 		history.push("AI: " + botReply);
 	};
 	if (!browserSupportsSpeechRecognition) {
-		return <span>Browser doesn't support speech recognition.</span>;
+		return <span>Browser doesn't support speech recognition please use the Chrome Browser.</span>;
 	}
 	return (
 		<div className="container">
