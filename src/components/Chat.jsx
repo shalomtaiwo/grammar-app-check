@@ -1,10 +1,10 @@
 import classnames from "classnames";
 import { Alert, AlertTitle } from "@mui/material";
 
-const Chat = ({ isBot, text, audioResult }) => {
+const Chat = ({ isBot, text }) => {
 	return (
 		<div className={classnames("msg", { bot: isBot, user: !isBot })}>
-			¨
+		
 			{isBot ? (
 				<Alert severity="success">
 					<AlertTitle>RIRI BOT</AlertTitle>

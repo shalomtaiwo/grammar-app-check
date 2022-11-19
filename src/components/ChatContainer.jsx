@@ -1,23 +1,19 @@
-import { Configuration, OpenAIApi } from "openai";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useAudioRecorder } from "@sarafhbk/react-audio-recorder";
 import SpeechRecognition, {
 	useSpeechRecognition,
 } from "react-speech-recognition";
 import Recorder from "./Recorder";
-import Chat from "./Chat";
-import FeedBack from "./FeedBack";
+import Chats from "./Chats";
+import io from 'socket.io-client';
+import env from "react-dotenv";
 
-const configuration = new Configuration({
-	apiKey: process.env.REACT_APP_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
 
 const ChatContainer = () => {
 	const textRef = useRef(null);
+	const chatHistory = useRef("Hi, how are you doing?")
 	const [isListening, setIsListening] = useState(false);
 	const [note, setNote] = useState(null);
-	const history = ["AI: Hi, how are you doing?"];
 	const { transcript, browserSupportsSpeechRecognition, resetTranscript } =
 		useSpeechRecognition({ clearTranscriptOnListen: true });
 
@@ -30,9 +26,20 @@ const ChatContainer = () => {
 		// errorMessage,
 	} = useAudioRecorder();
 
+	const [socket, setSocket] = useState(null);
+
+	useEffect(() => {
+	  const newSocket = io(env.SERVER_URL);
+	  setSocket(newSocket);
+	  return () => newSocket.close();
+	}, [setSocket]);
+  
+
+
+
 	const handleListen = useCallback(() => {
 		try {
-			SpeechRecognition.startListening({ continuous: true });
+			SpeechRecognition.startListening({ continuous: false});
 		} catch (error) {
 			console.log(error);
 		}
@@ -43,106 +50,63 @@ const ChatContainer = () => {
 		handleListen();
 	}, [handleListen]);
 
-	const [chats, setChats] = useState([
-		{ isBot: true, text: "Hi, how are you doing?", isFeedBack: false },
-	]);
+
+
+	const handleSendText = ()=>{
+		let text = textRef.current.value;
+		setHistory(text);
+		socket.emit("userMessage", text);
+
+		let data = {
+			method: 'POST',
+			body: JSON.stringify({text, isAudio:false, chatHistory: chatHistory.current}),
+			headers: { 'Content-Type': 'application/json' }
+		  };
+
+		  textRef.current.value = "";
+
+		  fetch('http://127.0.0.1:3000/conversation', data)
+		  .catch(err=>console.log(err))
+
+	}
 
 	const handleSend = async () => {
 		setIsListening(false);
 		SpeechRecognition.abortListening();
-		let s = textRef.current.value;
-		setChats((curr) => [
-			...curr,
-			{ isBot: false, text: textRef.current.value, isFeedBack: false },
-		]);
+		
 
-		const response = await openai.createCompletion({
-			model: "text-davinci-002",
-			prompt:
-				"Correct this to standard English:\n\n" +
-				s +
-				"\n\n| is_there_an_error | correct_sentence |",
-			temperature: 0,
-			max_tokens: 60,
-			top_p: 1,
-			frequency_penalty: 0,
-			presence_penalty: 0,
-		});
-
-		let t = response.data.choices[0].text;
-
-		const [isError, correctStatement] = t
-			.split("\n")
-			.pop()
-			.split("|")
-			.filter((w) => w.trim() !== "")
-			.map((w) => w.trim());
-
-		if (isError === "Yes") {
-			setChats((curr) => [
-				...curr,
-				{ isBot: true, isFeedBack: true, text: correctStatement },
-			]);
-		}
-
-		textRef.current.value = "";
-		history.push("Human: " + correctStatement);
-
-		const botResponse = await openai.createCompletion({
-			model: "text-davinci-002",
-			prompt: history.join("\n"),
-			temperature: 0.9,
-			max_tokens: 150,
-			top_p: 1,
-			frequency_penalty: 0,
-			presence_penalty: 0.6,
-			stop: [" Human:", " AI:"],
-		});
-		resetTranscript();
-
-		const botReply = botResponse.data.choices[0].text
-			.split("\n")
-			.pop()
-			.slice(4);
-
-		setChats((curr) => [
-			...curr,
-			{ isBot: true, text: botReply, isFeedBack: false },
-		]);
-		history.push("AI: " + botReply);
+		let data = {
+			method: 'POST',
+			body: JSON.stringify({text:note, isAudio:true}),
+			headers: { 'Content-Type': 'application/json' }
+		  }
+	  
+		  fetch('http://127.0.0.1:3000/conversation', data)
+		  .catch(err=>console.log(err))
+		  resetTranscript();
+		  
 	};
+
+  const setHistory = (msg)=>{
+	chatHistory.current = `${chatHistory.current}|${msg}`;
+
+  }
+
 	if (!browserSupportsSpeechRecognition) {
 		return <span>Browser doesn't support speech recognition please use the Chrome Browser.</span>;
 	}
-	return (
+	return socket?(
 		<div className="container">
-			<div className="chat">
-				{chats.map((chat, i) =>
-					chat.isFeedBack ? (
-						<FeedBack
-							key={i}
-							text={chat.text}
-						/>
-					) : (
-						<Chat
-							key={i}
-							isBot={chat.isBot}
-							text={chat.text}
-							audioResult={audioResult}
-						/>
-					)
-				)}
-			</div>
+			<Chats socket={socket} setHistory={setHistory}/>
 
 			<div className="textbox">
 				<audio controls src={audioResult} />
 				<textarea
 					name="speech"
 					id="speech"
-					value={note ? note : ""}
+					//value={note ? note : ""}
 					onChange={() => note ? note : ""}
 					rows="2"
-					readOnly
 					ref={textRef}
 				></textarea>
 				<div>
@@ -156,10 +120,11 @@ const ChatContainer = () => {
 						startRecording={startRecording}
 						stopRecording={stopRecording}
 					/>
+					<button onClick={handleSendText}>Send</button>
 				</div>
 			</div>
 		</div>
-	);
+	):(<div>Not connected</div>);
 };
 
 export default ChatContainer;
